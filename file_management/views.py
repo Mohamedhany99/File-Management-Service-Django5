@@ -1,9 +1,8 @@
 # file_management/views.py
 from django.http import JsonResponse, HttpResponse
-from rest_framework import generics, mixins, status
+from rest_framework import generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer, BrowsableAPIRenderer
 from rest_framework_xml.renderers import XMLRenderer
 from .models import UploadedFile
@@ -12,6 +11,7 @@ from collections import Counter
 import random
 
 
+# Task 1 Upload and store files
 class FileUploadView(generics.CreateAPIView):
     queryset = UploadedFile.objects.all()
     serializer_class = UploadedFileSerializer
@@ -21,6 +21,7 @@ class FileUploadView(generics.CreateAPIView):
     )
 
 
+# Task 2 get random line from the uploaded file and if header application/*
 class RandomLineView(APIView):
     renderer_classes = [BrowsableAPIRenderer, JSONRenderer, XMLRenderer]
 
@@ -33,9 +34,10 @@ class RandomLineView(APIView):
         file = random.choice(files)
         with open(file.file.path) as f:
             lines = f.readlines()
-
-        line = random.choice(lines).strip()
-        line_number = lines.index(line)
+        # Get the random line and its index in a single step
+        line_index = random.randrange(len(lines))
+        line = lines[line_index].strip()
+        line_number = line_index + 1
         most_common_letter = Counter(line.replace(" ", "")).most_common(1)[0][0]
 
         if accept_header == "application/json":
@@ -61,6 +63,7 @@ class RandomLineView(APIView):
             return HttpResponse(line, content_type="text/plain")
 
 
+# Task 3 Random Line Backwards
 class RandomLineBackwardsView(APIView):
     def get(self, request):
         files = UploadedFile.objects.all()
